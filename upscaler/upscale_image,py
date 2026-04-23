@@ -1,0 +1,32 @@
+import os
+import argparse
+import torch
+from PIL import Image
+from realesrgan import RealESRGAN
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-i", "--input", default="input")
+    parser.add_argument("-o", "--output", default="output_upscale")
+    parser.add_argument("--scale", type=int, default=2)
+    parser.add_argument("--model", default="RealESRGAN_x4plus_anime_6B")
+    args = parser.parse_args()
+
+    os.makedirs(args.output, exist_ok=True)
+    
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    model = RealESRGAN(device, scale=args.scale)
+    model.load_weights(f"{args.model}.pth", download=True)
+
+    files = [f for f in os.listdir(args.input) if f.lower().endswith((".png", ".jpg", ".jpeg"))]
+
+    for file in files:
+        img = Image.open(os.path.join(args.input, file)).convert("RGB")
+        upscaled = model.predict(img)
+        
+        name, _ = os.path.splitext(file)
+        upscaled.save(os.path.join(args.output, f"{name}_upscaled.png"))
+        print(f"Upscaled: {file}")
+
+if __name__ == "__main__":
+    main()
