@@ -1,0 +1,46 @@
+import yt_dlp
+import os
+from pathlib import Path
+
+def download_video(url):
+    downloads_path = str(Path.home() / "Downloads")
+    
+    print("\n--- 📺 PILIH KUALITAS VIDEO ---")
+    print("[1] 1080p (Full HD)")
+    print("[2] 720p  (HD)")
+    print("[3] 480p  (SD)")
+    print("[4] 360p  (Hemat Kuota)")
+    print("[5] Kualitas Terbaik (Auto)")
+    
+    pilihan = input("\nPilih nomor (1-5): ")
+    
+    kualitas_map = {
+        "1": "bestvideo[height<=1080][ext=mp4]+bestaudio[ext=m4a]/best[height<=1080]",
+        "2": "bestvideo[height<=720][ext=mp4]+bestaudio[ext=m4a]/best[height<=720]",
+        "3": "bestvideo[height<=480][ext=mp4]+bestaudio[ext=m4a]/best[height<=480]",
+        "4": "bestvideo[height<=360][ext=mp4]+bestaudio[ext=m4a]/best[height<=360]",
+        "5": "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best"
+    }
+
+    selected_format = kualitas_map.get(pilihan, kualitas_map["5"])
+
+    ydl_opts = {
+        'format': selected_format,
+        'outtmpl': os.path.join(downloads_path, '%(title)s.%(ext)s'),
+        'noplaylist': True,
+    }
+    
+    try:
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            print(f"\n⏳ Menyiapkan download ke: {downloads_path}")
+            ydl.download([url])
+        print(f"\n✅ Selesai! Cek folder Downloads kamu.")
+    except Exception as e:
+        print(f"\n❌ Gagal download: {e}")
+
+if __name__ == "__main__":
+    link = input("Masukkan URL YouTube: ").strip()
+    if link:
+        download_video(link)
+    else:
+        print("URL tidak boleh kosong!")
